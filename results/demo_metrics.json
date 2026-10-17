@@ -1,0 +1,116 @@
+{
+  "benchmark": "deterministic synthetic image",
+  "image_size": {
+    "width": 480,
+    "height": 320
+  },
+  "search_iterations": 5,
+  "scoring": "equal-weight normalized PSNR + SSIM - MSE",
+  "environment": {
+    "python": "3.12.6",
+    "opencv": "4.13.0",
+    "numpy": "2.2.6",
+    "scikit_image": "0.25.2"
+  },
+  "cases": [
+    {
+      "noise": "gaussian",
+      "config": {
+        "sigma": 25.0,
+        "seed": 7
+      },
+      "input": {
+        "psnr": 20.427435,
+        "ssim": 0.232299,
+        "mse": 589.30061
+      },
+      "selected_chain": [
+        "operation_bilateral_filter",
+        "operation_bilateral_filter",
+        "operation_bilateral_filter"
+      ],
+      "output": {
+        "psnr": 35.532305,
+        "ssim": 0.957008,
+        "mse": 18.19072
+      },
+      "psnr_gain_db": 15.10487,
+      "single_pass": {
+        "operation_gaussian_blur": {
+          "psnr": 26.050898,
+          "ssim": 0.532806,
+          "mse": 161.432359
+        },
+        "operation_median_blur": {
+          "psnr": 26.997816,
+          "ssim": 0.502923,
+          "mse": 129.80719
+        },
+        "operation_bilateral_filter": {
+          "psnr": 31.408636,
+          "ssim": 0.695874,
+          "mse": 47.012867
+        },
+        "operation_box_filter": {
+          "psnr": 24.027757,
+          "ssim": 0.739166,
+          "mse": 257.219954
+        },
+        "operation_non_local_means": {
+          "psnr": 26.004045,
+          "ssim": 0.681424,
+          "mse": 163.183344
+        }
+      }
+    },
+    {
+      "noise": "salt_pepper",
+      "config": {
+        "amount": 0.08,
+        "seed": 7
+      },
+      "input": {
+        "psnr": 16.196041,
+        "ssim": 0.194795,
+        "mse": 1561.263815
+      },
+      "selected_chain": [
+        "operation_median_blur",
+        "operation_median_blur"
+      ],
+      "output": {
+        "psnr": 33.147611,
+        "ssim": 0.986624,
+        "mse": 31.500632
+      },
+      "psnr_gain_db": 16.95157,
+      "single_pass": {
+        "operation_gaussian_blur": {
+          "psnr": 23.035616,
+          "ssim": 0.392088,
+          "mse": 323.235269
+        },
+        "operation_median_blur": {
+          "psnr": 32.844548,
+          "ssim": 0.987059,
+          "mse": 33.777348
+        },
+        "operation_bilateral_filter": {
+          "psnr": 16.30305,
+          "ssim": 0.201882,
+          "mse": 1523.264557
+        },
+        "operation_box_filter": {
+          "psnr": 23.014629,
+          "ssim": 0.605282,
+          "mse": 324.801076
+        },
+        "operation_non_local_means": {
+          "psnr": 16.926181,
+          "ssim": 0.218015,
+          "mse": 1319.66077
+        }
+      }
+    }
+  ]
+}
