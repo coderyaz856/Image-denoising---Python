@@ -3,6 +3,7 @@
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-classical%20vision-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
 [![Reproducible benchmark](https://img.shields.io/badge/benchmark-seeded%20and%20reproducible-2ea44f)](results/demo_metrics.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A reproducible computer-vision experiment that turns classical filter selection into a greedy optimization problem. The system evaluates multiple denoisers, accepts only score-improving steps, and can chain filters until the search converges.
 
