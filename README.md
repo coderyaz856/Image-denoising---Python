@@ -5,9 +5,14 @@
 [![Reproducible benchmark](https://img.shields.io/badge/benchmark-seeded%20and%20reproducible-2ea44f)](results/demo_metrics.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A reproducible computer-vision experiment that turns classical filter selection into a greedy optimization problem. The system evaluates multiple denoisers, accepts only score-improving steps, and can chain filters until the search converges.
+A reproducible computer-vision experiment in classical filter selection. The original greedy benchmark evaluates multiple denoisers against a clean reference, accepts only score-improving steps, and can chain filters until the search converges. A separate learned policy makes bounded filter decisions without that reference at inference.
 
 This project emphasizes **evaluation design**, **deterministic experimentation**, and **interpretable search**. In benchmark mode every result is measured against a clean ground-truth image; the interactive GUI is kept separate because a noisy image cannot serve as its own correctness target.
+
+The [finite-horizon fitted MDP study](docs/mdp_study.md) adds a sequential
+policy that does **not** receive a clean reference at inference. It is tested
+on source-image-held-out crops and compared with fixed filters and the
+original reference-aware greedy search.
 
 ![Ground truth, noisy inputs, and filter-search results](assets/benchmark_overview.png)
 
@@ -71,6 +76,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 python scripts/generate_demo_assets.py
+python scripts/benchmark_mdp.py
 python -m unittest discover -s tests -v
 ```
 
@@ -78,6 +84,26 @@ The generator overwrites only the committed evidence artifacts:
 
 - `assets/benchmark_overview.png`
 - `results/demo_metrics.json`
+
+The MDP benchmark writes `results/mdp_policy.npz` and
+`results/mdp_benchmark.json`. On 144 held-out cases, the fitted policy
+averaged 28.67 dB PSNR and 0.7933 SSIM, versus 28.47 dB and 0.7634 for
+one median pass. The paired PSNR cluster-bootstrap interval includes zero,
+so this is **not** a claim of reliable superiority. The original greedy
+search averaged 30.33 dB, but reads the clean reference on every decision:
+it is an oracle, not a deployable competitor. See the study for the method,
+split, case-level evidence and limitations.
+
+A second oracle given the synthetic noise label averaged 29.46 dB and 0.8086
+SSIM; the learned policy did not catch it. Neither the noise label nor the
+clean target is available to the blind policy.
+
+Apply the trained policy to a noisy image without a clean target:
+
+```bash
+python mdp_denoising.py --model results/mdp_policy.npz \
+  --input path/to/noisy.png --output path/to/restored.png
+```
 
 ## Run on an image
 
@@ -125,10 +151,18 @@ The GUI is useful for visual exploration and reports the selected filter chain. 
 
 ```text
 image_denoising.py              filters, metrics, search, CLI, and Tk GUI
+mdp_denoising.py                reference-free fitted MDP policy and CLI
 scripts/generate_demo_assets.py deterministic evidence and figure generator
+scripts/benchmark_mdp.py        image-split training and held-out comparison
+scripts/verify_mdp_evidence.py  compare quality evidence across two runs
 tests/test_image_denoising.py   metric, noise-model, and search regressions
+tests/test_mdp_denoising.py      policy, stop, serialization, and schema guards
+tests/test_mdp_protocol.py       source split and paired-analysis guards
 assets/benchmark_overview.png   generated visual comparison
 results/demo_metrics.json       generated full-precision benchmark record
+results/mdp_benchmark.json      per-case MDP experiment record
+results/mdp_policy.npz          small, pickle-free trained policy
+docs/mdp_study.md               method, protocol, results, limitations
 requirements.txt                runtime dependencies
 ```
 
@@ -136,6 +170,6 @@ Key Python entry points are `optimize_image_denoising()` for the search, `calcul
 
 ## Scope and limitations
 
-This is a compact study of classical denoisers, not a claim of state-of-the-art restoration. It does not train a model or compare against learned methods such as DnCNN. The committed results use one synthetic scene and idealized independent noise; real camera noise is signal-dependent and varies across sensors. The composite weights are exposed rather than tuned, so changing the objective can change the selected chain.
+This is a compact study of classical denoisers, not a claim of state-of-the-art restoration. The original greedy demonstration uses one synthetic scene; the fitted policy uses more source images but still only synthetic independent noise. Neither is compared with learned restoration methods such as DnCNN. Real camera noise is signal-dependent and varies across sensors. The composite weights are exposed rather than tuned, so changing the objective can change the selected chain.
 
 Those boundaries are intentional: the repository demonstrates how to build a small image-processing experiment whose decisions, measurements, and artifacts can all be inspected and reproduced.
